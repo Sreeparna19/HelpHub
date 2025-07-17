@@ -23,9 +23,26 @@ const { roleCheck } = require('./middleware/roleCheck');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: {
-    origin: process.env.FRONTEND_URL || "https://help-now-ivory.vercel.app/",
-    methods: ["GET", "POST"]
+cors: {
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      const allowedOrigins = [
+        process.env.FRONTEND_URL || "http://localhost:3000",
+        "https://help-now-ivory.vercel.app",
+        "https://help-now-ivory.vercel.app/"
+      ];
+      
+      // Check if origin is in allowed list (with and without trailing slash)
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, '')) || allowedOrigins.includes(origin + '/')) {
+        return callback(null, true);
+      }
+      
+      return callback(new Error('Not allowed by CORS'));
+    },
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
